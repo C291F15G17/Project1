@@ -236,7 +236,7 @@ public class Application{
 
     public void bookFlight(Application app, ResultSet rs, int row_num)
     {
-      
+      	return;
     }
 
     }
