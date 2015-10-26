@@ -6,7 +6,7 @@ public class Application{
   public String client_email = "";
   public String client_password = "";
   public boolean isAgent = false;
-  public ticket_number = 1;
+  public int ticket_number = 1;
 
   private String m_userName;
   private String m_password;
@@ -233,13 +233,13 @@ public class Application{
         }
 
         app.Menu(app);
-
-    public void bookFlight(Application app, ResultSet rs, int row_num)
+    }
+    public void bookFlight(Application app, ResultSet rs, int row)
     {
       	return;
     }
 
-    }
+    
 
     public void initViews(Application app)
     {
