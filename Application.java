@@ -96,17 +96,18 @@ public class Application{
 
     public void searchFlights(Application app) {
       Scanner in = new Scanner(System.in);
-      boolean two_connections = false;
+      String two_connections = "";
       boolean round_trip = false;
-      String dep_date, ret_date;
+      String sortOptions = "(order by price asc) as rn ";
+      String dep_date, ret_date = "";
 
-      System.out.print("Do you want to include flights that have 2 connections? (y/n): ");
-      if (in.next().toLowerCase().equals("y")){
-        two_connections = true;
-      }
       System.out.print("Do you want to book a round trip? (y/n): ");
       if (in.next().toLowerCase().equals("y")){
         round_trip = true;
+      }
+      System.out.print("Would you like to sort by number of stops first before the price? (y/n): ");
+      if(in.next().toLowerCase().equals("y")){
+        sortOptions = "(order by stops asc, price asc) as rn ";
       }
 
       System.out.print("\nEnter source: ");
@@ -143,26 +144,52 @@ public class Application{
       }
         app.initViews(app);
 
+        System.out.print("Do you want to include flights that have 2 connections? (y/n): ");
+        if (in.next().toLowerCase().equals("y")){
+          //What to add to the query to include two connections (Union)
+          two_connections =
+                      "union " +
+                      "SELECT flightno as fno, '' fno2, '' fno3, to_char(dep_date, 'DD-MM-YYYY') as dep_date, src,dst,to_char(dep_time, 'HH24:MI') as dep, " +
+                      "to_char(arr_time, 'HH24:MI') as arr,fare,price, 2 stops " +
+                      "FROM two_connections " +
+                      "WHERE src = '" + src + "' and dst = '" + dst + "' " +
+                      "AND to_char(dep_date, 'DD-MM-YYYY') = '" + dep_date + "' "; 
+        }
+
         Connection m_con;
-        String flights;
+        String flights, ret_flights;
         //Display flights with specifications given by user
-        flights = "SELECT flightno as fno, to_char(dep_date, 'DD-MM-YYYY') as dep_date, src,dst,to_char(dep_time, 'HH24:MI') as dep, " +
-                  "to_char(arr_time, 'HH24:MI') as arr,fare,seats,price " +
-                  "FROM available_flights " +
-                  "WHERE src = '" + src + "' and dst = '" + dst + "'" +
-                  "AND extract(day from dep_date) = '" + dep_dateparts[0] + "'" +
-                  "AND extract(month from dep_date) = '" + dep_dateparts[1] + "'" +
-                  "AND extract(year from dep_date) = '" + dep_dateparts[2] + "'";
-                  
+        flights = "SELECT rn, fno, fno2, fno3, dep_date, src, dst, dep, arr, fare, price, stops " +
+                  "FROM ( " +
+                    "SELECT fno, fno2, fno3, dep_date, src, dst, dep, arr, fare, price, stops, row_number() over "+ sortOptions +
+                    "FROM ( " +
+                      "SELECT flightno as fno, '' fno2, '' fno3, to_char(dep_date, 'DD-MM-YYYY') as dep_date, src,dst,to_char(dep_time, 'HH24:MI') as dep, " +
+                      "to_char(arr_time, 'HH24:MI') as arr,fare,price, 0 stops " +
+                      "FROM available_flights " +
+                      "WHERE src = '" + src + "' and dst = '" + dst + "' " +
+                      "AND to_char(dep_date, 'DD-MM-YYYY') = '" + dep_date + "' " +
+		      "UNION " +
+		      "SELECT flightno1 as fno, flightno2 as fno2, '' fno3, to_char(dep_date, 'DD-MM-YYYY') as dep_date, src,dst,to_char(dep_time, 'HH24:MI') as dep, " +
+                      "to_char(arr_time, 'HH24:MI') as arr,fare,price, 1 stops " +
+                      "FROM one_connection " +
+                      "WHERE src = '" + src + "' and dst = '" + dst + "' " +
+                      "AND to_char(dep_date, 'DD-MM-YYYY') = '" + dep_date + "' " +
+                      two_connections +
+                  ")) WHERE rn <=5";
+                  //"AND extract(day from dep_date) = '" + dep_dateparts[0] + "'" +
+                  //"AND extract(month from dep_date) = '" + dep_dateparts[1] + "'" +
+                  //"AND extract(year from dep_date) = '" + dep_dateparts[2] + "'";
+
         //Display return flights (not really the right way to do this, needs fixing)
-        String ret_flights = "SELECT flightno as fno, to_char(dep_date, 'DD-MM-YYYY') as dep_date, src,dst,to_char(dep_time, 'HH24:MI') as dep, " +
+        ret_flights = "SELECT flightno as fno, to_char(dep_date, 'DD-MM-YYYY') as dep_date, src,dst,to_char(dep_time, 'HH24:MI') as dep, " +
                   "to_char(arr_time, 'HH24:MI') as arr,fare,seats,price " +
                   "FROM available_flights " +
                   "WHERE src = '" + dst + "' and dst = '" + src + "'" +
-                  "AND extract(day from dep_date) = '" + ret_dateparts[0] + "'" +
-                  "AND extract(month from dep_date) = '" + ret_dateparts[1] + "'" +
-                  "AND extract(year from dep_date) = '" + ret_dateparts[2] + "'";
-        
+                  "AND to_char(dep_date, 'DD-MM-YYYY') = '" + ret_date + "'";
+                  //"AND extract(day from dep_date) = '" + ret_dateparts[0] + "'" +
+                  //"AND extract(month from dep_date) = '" + ret_dateparts[1] + "'" +
+                  //"AND extract(year from dep_date) = '" + ret_dateparts[2] + "'";
+
         Statement stmt;
         Statement stmt2;
 
@@ -173,16 +200,28 @@ public class Application{
           stmt = m_con.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
           stmt2 = m_con.createStatement(ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_UPDATABLE);
           ResultSet rst = stmt.executeQuery(flights);
-          
+
           if(!rst.next())
           {
             System.out.println("No flights found.");
           }
-          app.displayResultSet(rst);
+          else
+          {
+            System.out.println("Available departing flights: ");
+            app.displayResultSet(rst);
+            //Code asking to select a number based on ranking
+          }
           if(round_trip)
           {
             ResultSet rst2 = stmt2.executeQuery(ret_flights);
-            displayResultSet(rst2);
+            if (!rst2.next()){
+              System.out.println("No return flights available.");
+            }
+            else{
+              System.out.println("Available returning flights: ");
+              displayResultSet(rst2);
+              //Code asking to select a number based on ranking
+            }
           }
 
           rst.close();
@@ -203,8 +242,10 @@ public class Application{
     {
 
       Connection m_con;
-      String dropViews,singleFlight;
-      dropViews = "DROP VIEW available_flights";
+      String dropView1, dropView2, dropView3, singleFlight, twoFlights, threeFlights;
+      dropView1 = "DROP VIEW available_flights";
+      dropView2 = "DROP VIEW one_connection";
+      dropView3 = "DROP VIEW two_connections";
       singleFlight = "create view available_flights(flightno,dep_date, src,dst,dep_time,arr_time,fare,seats,price) as " +
                       "select f.flightno, sf.dep_date, f.src, f.dst, f.dep_time+(trunc(sf.dep_date)-trunc(f.dep_time)), " +
                       "f.dep_time+(trunc(sf.dep_date)-trunc(f.dep_time))+(f.est_dur/60+a2.tzone-a1.tzone)/24, " +
@@ -216,6 +257,18 @@ public class Application{
                       "group by f.flightno, sf.dep_date, f.src, f.dst, f.dep_time, f.est_dur,a2.tzone, " +
                       "a1.tzone, fa.fare, fa.limit, fa.price " +
                       "having fa.limit-count(tno) > 0";
+      twoFlights = "create view one_connection (src,dst,dep_date,flightno1,flightno2, layover,price) as " +
+			"select a1.src, a2.dst, a1.dep_date, a1.flightno, a2.flightno, a2.dep_time-a1.arr_time, " +
+			"min(a1.price+a2.price) " +
+			"from available_flights a1, available_flights a2 " +
+			"where a1.dst=a2.src and a1.arr_time +1.5/24 <=a2.dep_time and a1.arr_time +5/24 >=a2.dep_time " +
+			"group by a1.src, a2.dst, a1.dep_date, a1.flightno, a2.flightno, a2.dep_time, a1.arr_time ";
+      threeFlights = "create view two_connections (src,dst,dep_date,flightno1,flightno2, flightno3, layover,price) as " +
+			"select a1.src, a3.dst, a1.dep_date, a1.flightno, a2.flightno, a3.flightno, (a2.dep_time-a1.arr_time+(a3.dep_time-a2.arr_time)), " +
+			"min(a1.price+a2.price+a2.price) " +
+			"from available_flights a1, available_flights a2, available_flights a3 " +
+			"where a1.dst=a2.src and a2.dst=a3.src and a1.arr_time +1.5/24 <=a2.dep_time and a1.arr_time +5/24 >=a2.dep_time and a2.arr_time +1.5/24 <=a3.dep_time and a2.arr_time +5/24 >=a3.dep_time " +
+			"group by a1.src, a3.dst, a1.dep_date, a1.flightno, a2.flightno, a3.flightno, a2.dep_time, a1.arr_time, a3.dep_time, a2.arr_time ";
       Statement stmt;
 
 
@@ -225,7 +278,9 @@ public class Application{
         m_con = DriverManager.getConnection(app.m_url, app.m_userName, app.m_password);
 
         stmt = m_con.createStatement();
-        stmt.executeQuery(dropViews);
+        stmt.executeQuery(dropView1);
+	stmt.executeQuery(dropView2);
+	stmt.executeQuery(dropView3);
 
         stmt.close();
         m_con.close();
@@ -238,6 +293,8 @@ public class Application{
 
         stmt = m_con.createStatement();
         stmt.executeQuery(singleFlight);
+	stmt.executeQuery(twoFlights);
+	stmt.executeQuery(threeFlights);
 
         stmt.close();
         m_con.close();
@@ -352,7 +409,7 @@ public class Application{
             System.out.println();
             app.viewBookings(app);
           }
-          
+
           //Display extra info
           String moreInfo = "select distinct b.fare, bag_allow, b.flightno, src, dst, est_dur " +
           "from bookings b, tickets t, flight_fares ff, flights f " +
@@ -361,7 +418,7 @@ public class Application{
           "and b.fare = ff.fare " +
           "and t.email = '" + app.client_email +"'" +
           "and b.tno = '" + input + "'";
-          
+
           ResultSet rs2 = stmt.executeQuery(moreInfo);
           System.out.println();
 
@@ -531,7 +588,7 @@ public class Application{
       app.client_email = in.next();
       System.out.print("Enter a password: ");
       app.client_password = in.next();
-      
+
       //Check for password length
       if (app.client_password.length() > 4) {
         System.out.println("Password is too long; maximum 4 char");
