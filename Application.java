@@ -174,7 +174,7 @@ public class Application{
                       "FROM one_connection " +
                       "WHERE src = '" + src + "' and dst = '" + dst + "' " +
                       "AND to_char(dep_date, 'DD-MM-YYYY') = '" + dep_date + "' " +
-                      two_connections +
+                      //two_connections +
                   ")) WHERE rn <=5";
                   //"AND extract(day from dep_date) = '" + dep_dateparts[0] + "'" +
                   //"AND extract(month from dep_date) = '" + dep_dateparts[1] + "'" +
