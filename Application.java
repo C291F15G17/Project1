@@ -168,7 +168,7 @@ public class Application{
                       "FROM available_flights " +
                       "WHERE src = '" + src + "' and dst = '" + dst + "' " +
                       "AND to_char(dep_date, 'DD-MM-YYYY') = '" + dep_date + "' ";// +
-		      /*"UNION " +
+		      "UNION " +
 		      "SELECT flightno1 as fno, flightno2 as fno2, '' fno3, to_char(dep_date, 'DD-MM-YYYY') as dep_date, src,dst,to_char(dep_time, 'HH24:MI') as dep, " +
                       "to_char(arr_time, 'HH24:MI') as arr,fare,price, 1 stops " +
                       "FROM one_connection " +
