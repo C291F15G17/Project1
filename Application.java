@@ -6,7 +6,7 @@ public class Application{
   public String client_email = "";
   public String client_password = "";
   public boolean isAgent = false;
-
+  public ticket_number = 1;
 
   private String m_userName;
   private String m_password;
@@ -159,16 +159,16 @@ public class Application{
         Connection m_con;
         String flights, ret_flights;
         //Display flights with specifications given by user
-        flights = "SELECT rn, fno, fno2, fno3, dep_date, src, dst, dep, arr, fare, price, stops " +
+        flights = /*"SELECT rn, fno, fno2, fno3, dep_date, src, dst, dep, arr, fare, price, stops " +
                   "FROM ( " +
                     "SELECT fno, fno2, fno3, dep_date, src, dst, dep, arr, fare, price, stops, row_number() over "+ sortOptions +
-                    "FROM ( " +
+                    "FROM ( " +*/
                       "SELECT flightno as fno, '' fno2, '' fno3, to_char(dep_date, 'DD-MM-YYYY') as dep_date, src,dst,to_char(dep_time, 'HH24:MI') as dep, " +
                       "to_char(arr_time, 'HH24:MI') as arr,fare,price, 0 stops " +
                       "FROM available_flights " +
                       "WHERE src = '" + src + "' and dst = '" + dst + "' " +
-                      "AND to_char(dep_date, 'DD-MM-YYYY') = '" + dep_date + "' " +
-		      "UNION " +
+                      "AND to_char(dep_date, 'DD-MM-YYYY') = '" + dep_date + "' ";// +
+		      /*"UNION " +
 		      "SELECT flightno1 as fno, flightno2 as fno2, '' fno3, to_char(dep_date, 'DD-MM-YYYY') as dep_date, src,dst,to_char(dep_time, 'HH24:MI') as dep, " +
                       "to_char(arr_time, 'HH24:MI') as arr,fare,price, 1 stops " +
                       "FROM one_connection " +
@@ -178,7 +178,7 @@ public class Application{
                   ")) WHERE rn <=5";
                   //"AND extract(day from dep_date) = '" + dep_dateparts[0] + "'" +
                   //"AND extract(month from dep_date) = '" + dep_dateparts[1] + "'" +
-                  //"AND extract(year from dep_date) = '" + dep_dateparts[2] + "'";
+                  //"AND extract(year from dep_date) = '" + dep_dateparts[2] + "'";*/
 
         //Display return flights (not really the right way to do this, needs fixing)
         ret_flights = "SELECT flightno as fno, to_char(dep_date, 'DD-MM-YYYY') as dep_date, src,dst,to_char(dep_time, 'HH24:MI') as dep, " +
@@ -234,7 +234,10 @@ public class Application{
 
         app.Menu(app);
 
-
+    public void bookFlight(Application app, ResultSet rs, int row_num)
+    {
+      
+    }
 
     }
 
