@@ -207,6 +207,7 @@ public class Application{
           }
           else
           {
+            rst.previous();
             System.out.println("Available departing flights: ");
             app.displayResultSet(rst);
             //Code asking to select a number based on ranking
@@ -218,6 +219,7 @@ public class Application{
               System.out.println("No return flights available.");
             }
             else{
+              rst2.previous();
               System.out.println("Available returning flights: ");
               displayResultSet(rst2);
               //Code asking to select a number based on ranking
