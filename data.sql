@@ -42,9 +42,14 @@
 	insert into flights values ('AC026','MOS','HOB',to_date('00:15', 'hh24:mi'),200);
 	insert into flights values ('AC027','LAX','YEG',to_date('05:15', 'hh24:mi'),180);
 	insert into flights values ('AC028','HND','YEG',to_date('13:15', 'hh24:mi'),360);
+	insert into flights values ('AC029','YEG','HOB',to_date('13:15', 'hh24:mi'),360);
+	insert into flights values ('AC030','HOB','YEG',to_date('08:15', 'hh24:mi'),360);
 
 	insert into sch_flights values ('AC154',to_date('22-Sep-2015','DD-Mon-YYYY'),to_date('15:50', 'hh24:mi'),to_date('21:30','hh24:mi'));
 	insert into sch_flights values ('AC154',to_date('23-Sep-2015','DD-Mon-YYYY'),to_date('15:55', 'hh24:mi'),to_date('21:36','hh24:mi'));
+	
+	insert into sch_flights values ('AC029',to_date('25-Sep-2015','DD-Mon-YYYY'),to_date('13:15', 'hh24:mi'),to_date('19:15','hh24:mi'));
+	insert into sch_flights values ('AC030',to_date('27-Sep-2015','DD-Mon-YYYY'),to_date('08:15', 'hh24:mi'),to_date('14:15','hh24:mi'));
 
 	insert into sch_flights values ('AC001',to_date('15-Oct-2015','DD-Mon-YYYY'),to_date('12:50', 'hh24:mi'),to_date('17:50','hh24:mi'));
 	insert into sch_flights values ('AC001',to_date('17-Oct-2015','DD-Mon-YYYY'),to_date('12:50', 'hh24:mi'),to_date('17:50','hh24:mi'));
@@ -114,6 +119,8 @@
 	insert into flight_fares values ('AC027','F',10,200,0);
 	insert into flight_fares values ('AC028','Q',10,800,0);
 	insert into flight_fares values ('AC028','Y',10,700,0);
+	insert into flight_fares values ('AC029','Y',10,700,0);
+	insert into flight_fares values ('AC030','Y',10,700,0);
 
 	insert into passengers values ('davood@ggg.com','Davood Rafiei','Canada');
 	insert into passengers values ('david@ggg.com','David Raft','Canada');
